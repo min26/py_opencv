@@ -1,1 +1,1 @@
-# pyqt_opencv
+# OpenCV with Anaconda package
