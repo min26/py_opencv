@@ -161,7 +161,27 @@ class CV2test:
     def imgRotation(self):
         """
         cv2.getRotationMatrix2D()
+        cv2.warpAffine()
         """
+        image = cv2.imread("images/elephant.png")
+        image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        height,width = image_rgb.shape[:2]
+        center = (image_rgb.shape[1]/2, image_rgb.shape[0]/2)
+        ## rotation 
+        # angle = 45
+        # scale = 1
+        # rot_matrix = cv2.getRotationMatrix2D(center, angle, scale)
+        # new_image = cv2.warpAffine(image_rgb, rot_matrix, 
+        #                 (image_rgb.shape[1], image_rgb.shape[0]))
+        ## translation
+        tx = 100
+        ty = 100
+        tran_matrix = np.array([[1,0,tx], [0,1,ty]],dtype=np.float32)
+        new_image = cv2.warpAffine(image_rgb, tran_matrix, (width, height)) 
+        ##
+        cv2.imshow("Rotation", new_image)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
 
     def imgErode(self):
         """
@@ -226,5 +246,5 @@ class CV2test:
 
 if __name__ == "__main__":
     mycv = CV2test()
-    mycv.imgResize()
+    mycv.imgRotation()
 
