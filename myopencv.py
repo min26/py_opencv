@@ -183,9 +183,10 @@ class CV2test:
         cv2.waitKey(0)
         cv2.destroyAllWindows()
 
-    def imgErode(self):
+    def imgMorphologic(self):
         """
-        [erode] reduce,...
+        [erode] Erosion: shrinks the boundaries 
+        [dilate] Dilation: expands the boundaries 
         cv2.erode(src, kernel, [dst], [anchor], [interations], 
                     [borderType], [boarderValue])
         -- src: input image
@@ -199,21 +200,35 @@ class CV2test:
         """
         path = "images/dog.jpg"
         image = cv2.imread(path)
-        ## 1. erodsion
+        image_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         kernel = np.ones((5,5), np.uint8)
-        new_image = cv2.erode(image, kernel)
+        ## 1.1. dilation
+        dilated = cv2.dilate(image_gray, kernel, iterations=2)
+        ## 1.2. erodsion        
+        eroded = cv2.erode(image_gray, kernel, iterations=2)
         # new_image = cv2.erode(image, kernel, cv2.BORDER_REFLECT)
+        ## 1.3. opening (erosion followed by dilation)
+        opening = cv2.morphologyEx(image_gray, cv2.MORPH_OPEN, kernel)
+        ## 1.4. closing (dilation followed by erosion)
+        closing = cv2.morphologyEx(image_gray, cv2.MORPH_CLOSE, kernel)
         #
         ## 2. Make border 
         ## copyMakeBorder(src, top,bottom,left,right, borderType, value)
         ## -- borderType: cv2.BOARDER_DEFAULT, _CONSTANT, _REFLECT
         ## -- value (optional): cv2.BORDER_CONSTANT
-        # new_image = cv2.copyMakeBorder(new_image, 5,5,5,5, cv2.BORDER_CONSTANT)
-        new_image = cv2.copyMakeBorder(new_image, 100,100,100,100, cv2.BORDER_REFLECT)
+        #new_image = cv2.copyMakeBorder(eroded, 5,5,5,5, cv2.BORDER_CONSTANT)
+        #new_image = cv2.copyMakeBorder(eroded, 100,100,100,100, cv2.BORDER_REFLECT)
         #
-        cv2.imshow("Erosion", new_image)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
+        ## create subplots
+        titles=["dilated","eroded","opening","closing"]
+        images=[dilated, eroded, opening, closing]
+        for i in range(4):
+            plt.subplot(2,2, i+1)
+            plt.title(titles[i])
+            plt.imshow(images[i])
+        plt.tight_layout()
+        plt.show()
+
 
     def imgBlur(self):
         """
@@ -244,7 +259,51 @@ class CV2test:
         cv2.waitKey(0)
         cv2.destroyAllWindows()
 
+    def imgNormalization(self):
+        """
+        Image Mormalization: scaling pixel value ranges. 
+                            to improve performance.
+        """
+        image = cv2.imread("images/elephant.png")
+        image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        ## split channels
+        b,g,r = cv2.split(image_rgb)
+        ## parameter
+        min_val = 0
+        max_val = 1
+        norm_type = cv2.NORM_MINMAX
+        ## Normalize each channel and merge
+        b_norm = cv2.normalize(b.astype('float'), None, min_val, max_val, norm_type)
+        g_norm = cv2.normalize(g.astype('float'), None, min_val, max_val, norm_type)
+        r_norm = cv2.normalize(r.astype('float'), None, min_val, max_val, norm_type)
+        norm_image = cv2.merge((b_norm, g_norm, r_norm))
+        print(norm_image[:,:,0])
+        ##
+        plt.imshow(norm_image)
+        plt.title("Normalized")
+        plt.show()
+
+    def edgeDetection(self):
+        """
+        Canny Edge Detection: includes following steps
+        + Gaussian smoothing
+        + Gradient calculation
+        + Non-max suppression
+        + Hysteresis thresholding
+        """
+        image = cv2.imread("images/elephant.png")
+        image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        ## Canny edge detection
+        edges = cv2.Canny(image=image_rgb, threshold1=100, threshold2=700)
+        cv2.imshow('Edges', edges)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()       
+
+
+
+
 if __name__ == "__main__":
     mycv = CV2test()
-    mycv.imgRotation()
+    #mycv.edgeDetection()
+    mycv.imgMorphologic()
 
