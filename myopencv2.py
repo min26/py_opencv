@@ -17,13 +17,29 @@ class CV2test:
         -- ranges = [0,256]
         """
         img = cv2.imread("images/elephant.png", cv2.IMREAD_GRAYSCALE)
+        ##
+        ## creating a histograms equalization
+        # equ = cv2.equalizeHist(img)
+        # res = np.hstack((img, equ))
+        # cv2.imshow("Equalize", res)
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
+        ##
         ## calculate pixels in rage 0-255
-        histr = cv2.calcHist([img],[0],None,[256],[0,256])
+        histr = cv2.calcHist([img],[0],None,[256],[0,256])        
         ##
         plt.plot(histr)
         plt.show()
+        ##
 
-
+    def thresholding(self):
+        """
+        cv2.threshold(src, thresholdVal, maxVal, thresholdTech)
+        --thresholdTech:
+        ---- cv2.THRESH_BINARY: inverted or opposit
+        ---- cv2.THRESH_TRUNC: if (pixels>threshold) than turncated
+        ---- cv2.THRESH_TOZERO:if (pixel<threshold) pixel==0
+        """
 
 if __name__ == "__main__":
     mycv = CV2test()
