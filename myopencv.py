@@ -28,9 +28,11 @@ class CV2test:
         print (image.shape)
         #
         # --- 2. convert image --------------------
-        # -- gray image#2
-        # cvt_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        # -- rgb image
+        ## cv2.cvtColor(image, <color space>)
+        ## color space
+        ## -- cv2.COLOR_BGR2GRAY
+        ## -- cv2.COLOR_BGR2HSV
+        ## -- cv2.COLOR_BGR2LAB: L:light, A: Green->Magenta, B: Blue->Yellow
         cvt_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         #
         # --- 3. write image -----------
