@@ -72,6 +72,46 @@ class CV2test:
         if cv2.waitKey(0) & 0xff == 27:
             cv2.destroyAllWindows()
 
+    def subtractBackground(self):
+        capt = cv2.VideoCapture('image/walking.mp4')
+        ## 1. 
+        # fgbg = cv2.createBackgroundSubtractorMOG2()
+        # while(1):
+        #     ret, frame = capt.read()
+        #     fgmask = fgbg.apply(frame)
+        #     cv2.imshow('fgmask', fgmask)
+        #     cv2.imshow('frame', frame)
+        #     #
+        #     if cv2.waitKey(30) & 0xff == 27:
+        #         break
+        ## 2. 
+        _, image = capt.read()
+        avgVal = np.float32(image)
+        while(1):
+            _, image = capt.read()
+            ## update the running average
+            cv2.accumulateWeighted(image, avgVal, 0.02)
+            ## convert matrix to absolute value, 8bit
+            resultFrame = cv2.convertScaleAbs(avgVal)
+            ## or
+            ## resultFrame = cv2.RunningAvg(image, acc, alpha)
+            ##
+            cv2.imshow("input", image)
+            cv2.imshow("avgVal", resultFrame)
+            ##
+            if cv2.waitKey(30) & 0xff == 27:
+                break
+        capt.release()
+        cv2.destroyAllWindows()
+
+
+
+        capt.release()
+        cv2.destroyAllWindows()
+
+
+
+
     def colorFilter(self):
         """        
         """
@@ -177,9 +217,60 @@ class CV2test:
         cv2.waitKey(0)
         cv2.destroyAllWindows()
 
+    def transformation(self):
+        os.chdir("./images")
+        img = cv2.imread("elephant.png")
+        #
+        # ## 1. log transform
+        # c = 255 / (np.log(1+ np.max(img)))
+        # log_trans = c * np.log(1+ img)
+        # result = np.array(log_trans, dtype=np.uint8)
+        ## 2. try with gamma value = [0.1, 0.5. 1.2, 2.2]
+        gamma = 1.2
+        result = np.array(255 * (img /255) ** gamma, dtype = 'uint8')
+        #cv2.imwrite('transform.jpg', result)
+        cv2.imshow("transform", result)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()     
+
+    def registration(self):
+        img1 = cv2.imread("align1.jpg")
+        img2 = cv2.imread("aligh2.jpg")
+        img1 = cv2.cvtColor(img1, cv2.COLOR_BFR2GRAY)
+        img2 = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
+        height, width = img2.shape
+        ## Find keypoints and descriptors
+        # The first arg is the image, second arg is the mask
+        kp1, d1 = orb_detector, detectAndCompute(img1, None)
+        kp2, d2 = orb_detector, detectAndCompute(img2, None)
+        # Match features between the two images
+        # Brute force matcher with hanning distance
+        matcher = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck = True)
+        # Match the two sets of descriptors
+        matches = matcher.match(d1, d2)
+        # Sort matches on the basis of their hanning distance
+        matches.sort(key = lambda x: x.distance)
+        # Take the top 90% matches
+        matches = matches[:int(len(matches)* 0.9)]
+        no_of_matches = len(matches)
+        ##
+        p1 = np.zeros((no_of_matches, 2))
+        p2 = np.zeros((no_of_matches, 2))
+        for i in range(len(matches)):
+            p1[i, :] = kp1[matches[i].queryIdx].pt 
+            p2[i, :] = kp2[matches[i].queryIdx].pt
+        ## Find the homography matrix
+        homography, mask = cv2.findHomography(p1, p2, cv2.RANSAS)
+        ## 
+        trans = cv2.warpPerspective(img1_color, homography, (width, height))
+        ##
+        cv2.imwrite('output.jpg', trans)
+
+        
 
 
 if __name__ == "__main__":
     mycv = CV2test()
     #mycv.edgeDetection()
-    mycv.removeDamage()
+    #mycv.removeDamage()
+    mycv.transformation()
